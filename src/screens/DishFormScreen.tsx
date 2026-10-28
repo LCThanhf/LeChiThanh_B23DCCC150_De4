@@ -171,7 +171,8 @@ export default function DishFormScreen({ navigation, route }: Props) {
                 }
                 onFocus={() => setFocusedField('price')}
                 onBlur={() => setFocusedField(null)}
-                keyboardType="numeric"
+                inputMode="numeric"
+                keyboardType="number-pad"
                 placeholder="0"
                 placeholderTextColor={colors.textMuted}
                 selectionColor={colors.primary}

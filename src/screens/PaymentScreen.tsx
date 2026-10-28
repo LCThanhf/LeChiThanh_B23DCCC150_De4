@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -75,6 +76,21 @@ export default function PaymentScreen({ navigation, route }: Props) {
 
   const [receivedDigits, setReceivedDigits] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const moneyInputFocused = useRef(false);
+
+  useEffect(() => {
+    const subscription = Keyboard.addListener('keyboardDidShow', () => {
+      if (!moneyInputFocused.current) {
+        return;
+      }
+      setTimeout(() => {
+        scrollRef.current?.scrollToEnd({ animated: true });
+      }, 120);
+    });
+
+    return () => subscription.remove();
+  }, []);
 
   const lines = getInvoiceLines(invoice, dishes);
   const subtotal = lines.reduce((total, line) => total + line.lineTotal, 0);
@@ -168,6 +184,7 @@ export default function PaymentScreen({ navigation, route }: Props) {
         </View>
 
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -261,9 +278,16 @@ export default function PaymentScreen({ navigation, route }: Props) {
                 onChangeText={text =>
                   setReceivedDigits(normalizeDigits(text, 9))
                 }
-                onFocus={() => setInputFocused(true)}
-                onBlur={() => setInputFocused(false)}
-                keyboardType="numeric"
+                onFocus={() => {
+                  setInputFocused(true);
+                  moneyInputFocused.current = true;
+                }}
+                onBlur={() => {
+                  setInputFocused(false);
+                  moneyInputFocused.current = false;
+                }}
+                inputMode="numeric"
+                keyboardType="number-pad"
                 placeholder="0"
                 placeholderTextColor={colors.textMuted}
                 selectionColor={colors.primary}
